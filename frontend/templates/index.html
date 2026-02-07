@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Image Recognition - Dark Theme</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            position: relative;
+        }
+
+        .header-icon {
+            font-size: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .header h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #a0a0a0;
+            font-weight: 400;
+        }
+
+        /* Form Layout */
+        .ocr-form {
+            width: 100%;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* Panel Styles */
+        .panel {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .panel:hover {
+            border-color: rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .panel-header i {
+            font-size: 24px;
+            color: #667eea;
+        }
+
+        .panel-header h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        /* Image Container */
+        .image-container {
+            margin-bottom: 24px;
+        }
+
+        .image-box {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px dashed rgba(102, 126, 234, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .image-box:hover {
+            border-color: rgba(102, 126, 234, 0.6);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .image-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ffffff;
+        }
+
+        .success-icon {
+            color: #4ade80;
+            font-size: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            color: rgba(102, 126, 234, 0.5);
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .empty-state p {
+            font-size: 18px;
+            color: #d0d0d0;
+            margin-bottom: 8px;
+        }
+
+        .empty-state span {
+            font-size: 14px;
+            color: #808080;
+        }
+
+        /* File Input */
+        .file-input-wrapper {
+            margin-bottom: 12px;
+        }
+
+        #imageInput {
+            display: none;
+        }
+
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+
+        .file-info {
+            text-align: center;
+        }
+
+        .file-info small {
+            color: #808080;
+            font-size: 13px;
+        }
+
+        /* Result Container */
+        .result-container {
+            height: 100%;
+        }
+
+        .result-box {
+            height: 490px;
+            border-radius: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .result-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 20px;
+            background: rgba(74, 222, 128, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .text-success {
+            color: #4ade80;
+            font-size: 20px;
+        }
+
+        .result-status {
+            flex: 1;
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .copy-btn:hover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+        .extracted-text {
+            flex: 1;
+            padding: 24px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #e0e0e0;
+            background: transparent;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .extracted-text::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .extracted-text::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .extracted-text::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 4px;
+        }
+
+        .result-stats {
+            display: flex;
+            gap: 24px;
+            padding: 16px 24px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            color: #a0a0a0;
+        }
+
+        .empty-result {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .empty-result i {
+            font-size: 64px;
+            color: rgba(102, 126, 234, 0.4);
+            margin-bottom: 20px;
+        }
+
+        .empty-result p {
+            font-size: 18px;
+            color: #d0d0d0;
+            margin-bottom: 8px;
+        }
+
+        .empty-result span {
+            font-size: 14px;
+            color: #808080;
+        }
+
+        /* Action Button */
+        .action-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .ocr-button {
+            position: relative;
+            padding: 18px 48px;
+            font-size: 18px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .ocr-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .ocr-button:active {
+            transform: translateY(-1px);
+        }
+
+        .button-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .button-loader {
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ocr-button.loading .button-content {
+            display: none;
+        }
+
+        .ocr-button.loading .button-loader {
+            display: flex;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        .footer {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 20px 30px;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .footer-left i {
+            color: #fbbf24;
+        }
+
+        .footer-right {
+            color: #808080;
+            font-size: 14px;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-content {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(102, 126, 234, 0.2);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            margin: 0 auto 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-content h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #ffffff;
+        }
+
+        .loading-content p {
+            color: #a0a0a0;
+            font-size: 16px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 968px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 32px;
+            }
+
+            .image-box {
+                height: 300px;
+            }
+
+            .result-box {
+                height: 400px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .panel {
+                padding: 20px;
+            }
+
+            .header {
+                padding: 30px 15px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .ocr-button {
+                padding: 16px 32px;
+                font-size: 16px;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    
+
+    <form method="POST" enctype="multipart/form-data" class="ocr-form">
+        <div class="content-grid">
+            
+            <!-- LEFT: Image Upload Panel -->
+            <div class="panel left-panel">
+                <div class="panel-header">
+                    <i class="fas fa-upload"></i>
+                    <h3>Upload Image</h3>
+                </div>
+
+                <div class="image-container">
+                    <div class="image-box">
+                        {% if image_url %}
+                            <img src="{{ image_url }}" alt="Uploaded Image" class="preview-image">
+                            <div class="image-overlay">
+                                <i class="fas fa-check-circle success-icon"></i>
+                                <span>Image Ready</span>
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Drag & drop your image here</p>
+                                <span>or click to browse</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="file-input-wrapper">
+                    <input type="file" name="image" id="imageInput" accept="image/*" required>
+                    <label for="imageInput" class="file-input-label">
+                        <i class="fas fa-paperclip"></i>
+                        Choose Image File
+                    </label>
+                </div>
+                
+                <div class="file-info">
+                    <small>Supported formats: JPG, PNG, GIF, WEBP (Max 10MB)</small>
+                </div>
+            </div>
+
+            <!-- RIGHT: OCR Results Panel -->
+            <div class="panel right-panel">
+                <div class="panel-header">
+                    <i class="fas fa-file-alt"></i>
+                    <h3>Extracted Text</h3>
+                </div>
+
+                <div class="result-container">
+                    <div class="result-box">
+                        {% if result %}
+                            <div class="result-content">
+                                <div class="result-header">
+                                    <i class="fas fa-check text-success"></i>
+                                    <span class="result-status">Text Extraction Complete</span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard()">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                                <pre class="extracted-text">{{ result }}</pre>
+                                <div class="result-stats">
+                                    <span class="char-count">{{ result|length }} characters</span>
+                                    <span class="word-count">{{ result.split()|length }} words</span>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="empty-result">
+                                <i class="fas fa-robot"></i>
+                                <p>AI is ready to extract text</p>
+                                <span>Upload an image to get started</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Action Button -->
+        <div class="action-section">
+            <button type="submit" class="ocr-button">
+                <span class="button-content">
+                    
+                    <span class="button-text">Extract </span>
+                </span>
+                <div class="button-loader">
+                    <div class="spinner"></div>
+                    <span>Processing...</span>
+                </div>
+            </button>
+        </div>
+    </form>
+
+   
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <h3>Processing Image</h3>
+        <p>Our AI is extracting text from your image...</p>
+    </div>
+</div>
+
+<script>
+// Copy to clipboard functionality
+function copyToClipboard() {
+    const text = document.querySelector('.extracted-text').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        const icon = btn.querySelector('i');
+        icon.className = 'fas fa-check';
+        setTimeout(() => {
+            icon.className = 'fas fa-copy';
+        }, 2000);
+    });
+}
+
+// Form submission with loading
+document.querySelector('.ocr-form').addEventListener('submit', function() {
+    document.getElementById('loadingOverlay').classList.add('show');
+    document.querySelector('.ocr-button').classList.add('loading');
+});
+
+// File input preview
+document.getElementById('imageInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imageBox = document.querySelector('.image-box');
+            imageBox.innerHTML = `
+                <img src="${e.target.result}" alt="Preview" class="preview-image">
+                <div class="image-overlay">
+                    <i class="fas fa-check-circle success-icon"></i>
+                    <span>Image Ready</span>
+                </div>
+            `;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+
+</body>
+</html>
