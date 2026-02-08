@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 import os
 import subprocess
+import sys
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
@@ -16,8 +17,7 @@ def index():
         file.save(image_path)
 
         # Run your existing backend
-        process = subprocess.run(["python", "../yolo-model/main.py", image_path],text=True,capture_output=True)
-
+        process = subprocess.run([sys.executable, "../yolo-model/main.py", image_path], text=True, capture_output=True)
         print("STDOUT:", process.stdout)
         print("STDERR:", process.stderr)
 
