@@ -20,11 +20,11 @@
 
 {% if result %}
     <h3>Extracted Text:</h3>
-    <pre>
-        {% for line in result %}
-{{ line }}
-{% endfor %}
-    </pre>
+    <pre>{
+        {% for line in result.split('\n') %}
+            {{ line }}<br>
+        {% endfor %}
+    }</pre>
 {% endif %}
 
 </body>

@@ -38,10 +38,11 @@ def is_garbage(text):
 
 # ---------------- MAIN OCR FUNCTION ----------------
 def run_ocr(image_path):
+
     img = cv2.imread(image_path)
 
     if img is None:
-        return ["❌ Image not found"]
+        return "❌ Image not found"
 
     boxes = []
 
@@ -61,7 +62,29 @@ def run_ocr(image_path):
             boxes.append(bbox)
 
     if not boxes:
-        return ["❌ No text detected"]
+        return "❌ No text detected"
+
+    # -------- Remove Tiny Noise Boxes --------
+    filtered_boxes = []
+    for box in boxes:
+        pts = np.array(box).astype(int)
+        x, y, w, h = cv2.boundingRect(pts)
+
+        if w > 20 and h > 20:   # ignore very small detections
+            filtered_boxes.append(box)
+
+    boxes = filtered_boxes
+
+    if not boxes:
+        return "⚠ Only noise detected"
+
+    # -------- Sort Boxes Top-to-Bottom, Left-to-Right --------
+    def sort_key(box):
+        pts = np.array(box).astype(int)
+        x, y, w, h = cv2.boundingRect(pts)
+        return (y, x)
+
+    boxes = sorted(boxes, key=sort_key)
 
     final_output = []
 
@@ -73,6 +96,10 @@ def run_ocr(image_path):
 
         if crop.size == 0:
             continue
+
+        # Optional: Slightly upscale small crops (improves accuracy)
+        if h < 50:
+            crop = cv2.resize(crop, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_CUBIC)
 
         pil_img = Image.fromarray(crop).convert("RGB")
         pixel_values = processor(images=pil_img, return_tensors="pt").pixel_values.to(device)
@@ -86,6 +113,7 @@ def run_ocr(image_path):
             final_output.append(text)
 
     if not final_output:
-        return ["⚠ Text detected but could not extract properly"]
+        return "⚠ Text detected but could not extract properly"
 
-    return final_output
+    # -------- Return Clean Paragraph Text --------
+    return "\n".join(final_output) 
