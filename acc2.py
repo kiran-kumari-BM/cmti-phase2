@@ -2,10 +2,6 @@ import cv2
 import numpy as np
 import torch
 import re
-import os
-from uuid import uuid4
-from flask import Flask, render_template, request, send_from_directory, url_for
-from werkzeug.utils import secure_filename
 from paddleocr import PaddleOCR
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 from PIL import Image
@@ -22,10 +18,6 @@ model = VisionEncoderDecoderModel.from_pretrained(TROCR_MODEL)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model.to(device)
 model.eval()
-
-app = Flask(__name__)
-UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 def is_garbage(text):
@@ -100,77 +92,72 @@ def box_center_y(box):
     return np.mean([p[1] for p in box])
 
 
+
+
 def run_acc2_ocr(image_path):
     img = cv2.imread(image_path)
     if img is None:
         return "Image not found"
 
-    img = auto_rotate(img)
-    results = ocr.predict(img)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    _, thresh = cv2.threshold(gray, 0, 255,
+                              cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
-    boxes = []
-    for page in results:
-        for poly in page["dt_polys"]:
-            boxes.append(poly)
+    # ---- Horizontal projection ----
+    horizontal_sum = np.sum(thresh, axis=1)
 
-    if not boxes:
-        return "No text detected"
+    lines = []
+    start = None
 
-    boxes = sorted(boxes, key=box_center_y)
+    for i, val in enumerate(horizontal_sum):
+        if val > 10 and start is None:
+            start = i
+        elif val <= 10 and start is not None:
+            if i - start > 15:
+                lines.append((start, i))
+            start = None
 
     final_output = []
-    seen_lines = set()
 
-    for poly in boxes:
-        crop = crop_polygon(img, poly)
-        if crop is None:
-            continue
+    for (y1, y2) in lines:
+        line_crop = img[y1:y2, :]
 
-        crop = enhance_crop(crop)
-        pil_img = Image.fromarray(crop).convert("RGB")
+        # Add padding
+        pad = 20
+        line_crop = cv2.copyMakeBorder(
+            line_crop,
+            pad, pad, pad, pad,
+            cv2.BORDER_CONSTANT,
+            value=[255, 255, 255]
+        )
 
-        pixel_values = processor(images=pil_img,
-                                 return_tensors="pt").pixel_values.to(device)
+        # Resize to fixed height
+        h, w = line_crop.shape[:2]
+        target_h = 64
+        scale = target_h / h
+        new_w = int(w * scale)
+        line_crop = cv2.resize(line_crop, (new_w, target_h))
+
+        pil_img = Image.fromarray(line_crop).convert("RGB")
+
+        pixel_values = processor(
+            images=pil_img,
+            return_tensors="pt"
+        ).pixel_values.to(device)
 
         with torch.no_grad():
-            ids = model.generate(pixel_values, max_length=128)
+            ids = model.generate(
+                pixel_values,
+                max_length=256,
+                num_beams=5
+            )
 
-        text = processor.batch_decode(ids,
-                                      skip_special_tokens=True)[0].strip()
+        text = processor.batch_decode(
+            ids,
+            skip_special_tokens=True
+        )[0].strip()
 
-        norm = re.sub(r"\s+", " ", text.lower())
-
-        if norm in seen_lines:
-            continue
-
-        if not is_garbage(text):
+        if len(text) > 2:
             final_output.append(text)
-            seen_lines.add(norm)
 
     return "\n".join(final_output)
-
-
-@app.route("/uploads/<path:filename>")
-def uploaded_file(filename):
-    return send_from_directory(UPLOAD_DIR, filename)
-
-
-@app.route("/", methods=["GET", "POST"])
-def index():
-    image_url = None
-    result = None
-
-    if request.method == "POST":
-        file = request.files.get("image")
-        if file and file.filename:
-            filename = secure_filename(file.filename)
-            unique_name = f"{uuid4().hex}_{filename}"
-            save_path = os.path.join(UPLOAD_DIR, unique_name)
-            file.save(save_path)
-            result = run_acc2_ocr(save_path)
-            image_url = url_for("uploaded_file", filename=unique_name)
-
-    return render_template("index.html", image_url=image_url, result=result)
-
-if __name__ == "__main__":
-    app.run(debug=True, port=5000)
