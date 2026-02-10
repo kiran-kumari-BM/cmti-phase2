@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Welcome {{ user.name }}</h2>
+
+<hr>
+
+<h3>Upload Documents</h3>
+<form method="POST" action="{{ url_for('upload') }}" enctype="multipart/form-data">
+    <input type="file" name="documents" multiple required>
+    <button type="submit">Upload</button>
+</form>
+
+<hr>
+
+<h3>Your Documents</h3>
+
+<!-- Auto refresh every 5 seconds if any document is processing -->
+
+
+<form method="POST" action="{{ url_for('bulk_download') }}">
+
+<table border="1" cellpadding="8" width="100%" style="border-collapse: collapse;">
+    <tr style="background-color: #f2f2f2;">
+        <th>Select</th>
+        <th>File Name</th>
+        <th>Status</th>
+        <th>Uploaded At</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for doc in documents %}
+    <tr>
+
+        <!-- SELECT CHECKBOX -->
+        <td align="center">
+            {% if doc.status == "completed" %}
+                <input type="checkbox" name="selected_docs" value="{{ doc.id }}">
+            {% endif %}
+        </td>
+
+        <!-- FILE NAME -->
+        <td>{{ doc.filename }}</td>
+
+        <!-- STATUS -->
+        <td>
+            {% if doc.status == "processing" %}
+                <span style="color: orange; font-weight: bold;">
+                    ⏳ Processing...
+                </span>
+
+            {% elif doc.status == "completed" %}
+                <span style="color: green; font-weight: bold;">
+                    ✅ Completed
+                </span>
+
+            {% elif doc.status == "failed" %}
+                <span style="color: red; font-weight: bold;">
+                    ❌ Failed
+                </span>
+
+            {% else %}
+                {{ doc.status }}
+            {% endif %}
+        </td>
+
+        <!-- UPLOADED TIME -->
+        <td>{{ doc.uploaded_at }}</td>
+
+        <!-- ACTIONS -->
+        <td>
+
+            <a href="{{ url_for('view_document', doc_id=doc.id) }}">
+                View
+            </a>
+
+            {% if doc.status == "completed" %}
+                |
+                <a href="{{ url_for('download_pdf', doc_id=doc.id) }}">
+                    PDF
+                </a>
+                |
+                <a href="{{ url_for('download_word', doc_id=doc.id) }}">
+                    Word
+                </a>
+                |
+                <a href="{{ url_for('ask_question_route', doc_id=doc.id) }}">
+                    Ask
+                </a>
+            {% endif %}
+
+        </td>
+
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+
+<button type="submit">
+    Download Selected as ZIP
+</button>
+
+</form>
+
+<br><br>
+
+<a href="{{ url_for('auth.logout') }}">
+    Logout
+</a>
+
+{% endblock %}

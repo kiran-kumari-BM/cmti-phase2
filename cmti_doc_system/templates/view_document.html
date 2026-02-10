@@ -1,0 +1,27 @@
+<h2>{{ doc.filename }}</h2>
+
+<form method="POST">
+    <textarea name="edited_text" rows="20" cols="100">
+{{ doc.extracted_text }}
+    </textarea>
+
+    <br><br>
+    <button type="submit">Save Changes</button>
+</form>
+
+<br><br>
+
+<!-- 🔽 ADD THIS PART -->
+<a href="{{ url_for('download_pdf', doc_id=doc.id) }}">
+    Download PDF
+</a>
+
+|
+
+<a href="{{ url_for('download_word', doc_id=doc.id) }}">
+    Download Word
+</a>
+
+<br><br>
+
+<a href="{{ url_for('dashboard') }}">Back</a>
