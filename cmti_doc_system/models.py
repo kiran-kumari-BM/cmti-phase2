@@ -17,7 +17,7 @@ class Document(db.Model):
     stored_path = db.Column(db.String(500))
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.String(50), default="uploaded")
-
+    embedding_data = db.Column(db.PickleType, nullable=True)
     extracted_text = db.Column(db.Text)
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))

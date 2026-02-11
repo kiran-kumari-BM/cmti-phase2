@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Ask Questions About: {{ doc.filename }}</h2>
+
+<form method="POST">
+    <textarea name="question" rows="3" cols="80" required></textarea>
+    <br><br>
+    <button type="submit">Ask</button>
+</form>
+
+<hr>
+
+{% if answer %}
+    <h3>Answer:</h3>
+    <div style="padding:15px; border:1px solid #ccc; background:#f9f9f9;">
+        {{ answer }}
+    </div>
+
+    <h4>Source (Citation):</h4>
+    <div style="padding:15px; border:1px solid #eee; background:#fafafa;">
+        {{ citation }}
+    </div>
+{% endif %}
+
+<br>
+<a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+
+{% endblock %}

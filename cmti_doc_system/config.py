@@ -8,3 +8,6 @@ class Config:
 
     UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
     OUTPUT_FOLDER = os.path.join(os.getcwd(), "outputs")
+
+import os
+os.environ["PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK"] = "True"
