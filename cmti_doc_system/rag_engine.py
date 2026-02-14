@@ -65,6 +65,6 @@ Answer:
         max_new_tokens=150
     )
 
-    answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
-
+    generated_text= tokenizer.decode(outputs[0], skip_special_tokens=True)
+    answer = generated_text.split("Answer:")[-1].strip()
     return answer, best_chunk

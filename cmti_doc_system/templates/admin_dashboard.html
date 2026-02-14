@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>🛠 Admin Dashboard</h2>
+
+<hr>
+
+<h3>📊 System Statistics</h3>
+<ul>
+    <li>Total Users: {{ total_users }}</li>
+    <li>Total Documents: {{ total_docs }}</li>
+    <li>Completed OCR: {{ total_completed }}</li>
+    <li>Failed OCR: {{ total_failed }}</li>
+</ul>
+
+<hr>
+
+<h3>👥 All Users</h3>
+
+<table border="1" cellpadding="8" width="100%">
+<tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Role</th>
+    <th>Action</th>
+</tr>
+
+{% for user in users %}
+<tr>
+    <td>{{ user.id }}</td>
+    <td>{{ user.name }}</td>
+    <td>{{ user.email }}</td>
+    <td>{{ user.role }}</td>
+    <td>
+        {% if user.role != "admin" %}
+        <a href="{{ url_for('delete_user', user_id=user.id) }}"
+           onclick="return confirm('Delete this user?')">
+           ❌ Delete
+        </a>
+        {% else %}
+        —
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
+</table>
+
+<hr>
+
+<h3>📄 All Documents</h3>
+
+<table border="1" cellpadding="8" width="100%">
+<tr>
+    <th>ID</th>
+    <th>Filename</th>
+    <th>User ID</th>
+    <th>Status</th>
+    <th>Action</th>
+</tr>
+
+{% for doc in documents %}
+<tr>
+    <td>{{ doc.id }}</td>
+    <td>{{ doc.filename }}</td>
+    <td>{{ doc.user_id }}</td>
+    <td>{{ doc.status }}</td>
+    <td>
+        <a href="{{ url_for('delete_document_admin', doc_id=doc.id) }}"
+           onclick="return confirm('Delete this document?')">
+           ❌ Delete
+        </a>
+    </td>
+</tr>
+{% endfor %}
+</table>
+
+<br><br>
+<a href="{{ url_for('dashboard') }}">⬅ Back to Dashboard</a>
+
+{% endblock %}

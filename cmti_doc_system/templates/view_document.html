@@ -1,27 +1,87 @@
-<h2>{{ doc.filename }}</h2>
+{% extends "base.html" %}
+{% block content %}
 
-<form method="POST">
-    <textarea name="edited_text" rows="20" cols="100">
-{{ doc.extracted_text }}
-    </textarea>
+<div class="row">
 
-    <br><br>
-    <button type="submit">Save Changes</button>
-</form>
+    <!-- LEFT SIDE — OCR TEXT -->
+    <div class="col-md-6">
 
-<br><br>
+        <div class="card p-3 shadow-sm">
+            <h5>Document: {{ doc.filename }}</h5>
+            <form method="POST">
+                <textarea name="edited_text"
+                          class="form-control"
+                          rows="20">{{ doc.extracted_text }}</textarea>
 
-<!-- 🔽 ADD THIS PART -->
-<a href="{{ url_for('download_pdf', doc_id=doc.id) }}">
-    Download PDF
-</a>
+                <button type="submit"
+                        class="btn btn-primary mt-3">
+                    Save Changes
+                </button>
+            </form>
+        </div>
 
-|
+    </div>
 
-<a href="{{ url_for('download_word', doc_id=doc.id) }}">
-    Download Word
-</a>
 
-<br><br>
+    <!-- RIGHT SIDE — CHAT PANEL -->
+    <div class="col-md-6">
 
-<a href="{{ url_for('dashboard') }}">Back</a>
+        <div class="card p-3 shadow-sm">
+
+            <h5>Ask about this document</h5>
+
+            <div style="height:400px; overflow-y:auto; background:#f8f9fa; padding:10px; border-radius:8px;" id="chat-box">
+
+                {% if chat_history %}
+                    {% for item in chat_history %}
+                        <div class="mb-3">
+
+                            <!-- Question -->
+                            <div style="text-align:right;">
+                                <div style="display:inline-block; background:#0d6efd; color:white; padding:8px 12px; border-radius:15px;">
+                                    {{ item.question }}
+                                </div>
+                            </div>
+
+                            <!-- Answer -->
+                            <div class="mt-2">
+                                <div style="display:inline-block; background:#e9ecef; padding:8px 12px; border-radius:15px;">
+                                    {{ item.answer }}
+                                </div>
+                            </div>
+
+                            <!-- Citation -->
+                            <div class="mt-1">
+                                <small class="text-muted">
+                                    📄 Based on: "{{ item.citation[:150] }}..."
+                                </small>
+                            </div>
+
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+            </div>
+
+            <hr>
+
+            <form method="POST" action="{{ url_for('ask_route', doc_id=doc.id) }}">
+                <div class="input-group">
+                    <input type="text"
+                           name="question"
+                           class="form-control"
+                           placeholder="Ask something about this document..."
+                           required>
+                    <button class="btn btn-success">
+                        Ask
+                    </button>
+                </div>
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -34,3 +34,30 @@ class ChatMessage(db.Model):
     content = db.Column(db.Text)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+
+from datetime import datetime
+
+class ChatHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    document_id = db.Column(
+        db.Integer,
+        db.ForeignKey("document.id"),
+        nullable=False
+    )
+
+    question = db.Column(db.Text, nullable=False)
+    answer = db.Column(db.Text, nullable=False)
+    citation = db.Column(db.Text)
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+    document = db.relationship(
+        "Document",
+        backref=db.backref("chats", lazy=True)
+    )

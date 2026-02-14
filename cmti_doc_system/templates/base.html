@@ -1,10 +1,94 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>CMTI Document System</title>
-    <meta http-equiv="refresh" content="250">
+    <title>CMTI Document Intelligence</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f4f6f9;
+        }
+
+        .sidebar {
+            height: 100vh;
+            background: #1f2937;
+            color: white;
+            padding: 20px;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            margin: 10px 0;
+        }
+
+        .card-doc {
+            transition: 0.3s;
+        }
+
+        .card-doc:hover {
+            transform: translateY(-5px);
+        }
+
+        .status-processing {
+            background: orange;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .status-completed {
+            background: green;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .status-failed {
+            background: red;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+    </style>
 </head>
+
 <body>
-    {% block content %}{% endblock %}
+<div class="container-fluid">
+    <div class="row">
+        
+        <!-- Sidebar -->
+        <div class="col-md-2 sidebar">
+            <h4>DOC AI</h4>
+            <hr>
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-10 p-4">
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <div class="mb-3">
+                  {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                      {{ message }}
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
